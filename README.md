@@ -87,13 +87,15 @@ The code in `invoke_function.rb` and `invoke_function_file.rb` follows the same 
 - `function_name`
 - `payload (if any)`
 
+Note that the `compartment` can be anywhere in the compartment "tree" of your tenancy (e.g. it could be a sub compartment of a sub compartment several levels below the root compartment).
+
 Most of the work takes place inside `api_helper` as follows:
 
 1. [`compartment_ocid`](api_helper.rb#L39) - uses the `OCI::Identity::IdentityClient` of the SDK to look up the OCID of the named compartment.
-2. [`app_ocid`](api_helper.rb#64) - uses the `OCI::Functions::FunctionsManagementClient` of the SDK to look up the OCID of the named application.
-3. [`function`](api_helper.rb#86) - uses the `OCI::Functions::FunctionsManagementClient` of the SDK to get the named function.
-4. Having navigated from the `Compartment` to the `Application` to the `Function` in turn, we then call [`fn_invocation_client`](api_helper.rb#93) to create an instance of `OCI::Functions::FunctionsInvokeClient`.
-5. Finally the `OCI::Functions::FunctionsInvokeClient` is then used by [`invoke_function`](api_helper.rb#103) to invoke the function and return the result.
+2. [`app_ocid`](api_helper.rb#L64) - uses the `OCI::Functions::FunctionsManagementClient` of the SDK to look up the OCID of the named application.
+3. [`function`](api_helper.rb#L86) - uses the `OCI::Functions::FunctionsManagementClient` of the SDK to get the named function.
+4. Having navigated from the `Compartment` to the `Application` to the `Function` in turn, we then call [`fn_invocation_client`](api_helper.rb#L93) to create an instance of `OCI::Functions::FunctionsInvokeClient`.
+5. Finally the `OCI::Functions::FunctionsInvokeClient` is then used by [`invoke_function`](api_helper.rb#L103) to invoke the function and return the result.
 
 ### Running the Examples
 
@@ -142,114 +144,28 @@ We're going to use a [TensorFlow based function](https://github.com/abhirockzz/f
 as an example to explore the possibility of invoking a function using binary content.
 This function expects the image data (in binary form) as an input and returns what object that image
 resembles along with the percentage accuracy.
- 
-# Lord Vader says delete the rest:
+
+Once you've deployed the `classify` function, the command to invoke it using Fn
+CLI would be something like this (I've just deployed it to the same helloworld-app as the helloworld-func):
 
 ```bash
-ruby invoke_function.rb <compartment-name> <app-name> <function-name> [<request payload>]
+[ewan@dalek fn-ruby-sdk-invoke]$ cat pepperoni-pizza-800x800.png | fn invoke helloworld-app classify
+This is a 'pizza' Accuracy - 95%
 ```
 
-### Enable debug mode
+In this case, the `pepperoni-pizza-800x800.png` image is being passed as an input to the function. 
 
-Set environment variable:
+To do this via the SDK, we can run `invoke_function_file.rb`, the key difference being that the 4th argument is now a path to the payload file:
 
 ```bash
-export DEBUG=1
-ruby invoke_function.rb <compartment-name> <app-name> <function-name> <request payload>
+[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function_file.rb
+usage: ruby invoke_function.rb <compartment-name> <app-name> <function-name> <request-payload-path>
 ```
-or
 
+The file contents are read and sent to the function as the [`payload`](invoke_function_file.rb#L11).
+
+To send an image as the payload:
 ```bash
-DEBUG=1.rbthon invoke_function.rb <compartment-name> <app-name> <function-name> <request payload>
+[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function_file.rb FaaS_Test helloworld-app classify pepperoni-pizza-800x800.png
+This is a 'pizza' Accuracy - 95%
 ```
-
-### Example of invoking a function
-
-1) Using "DEFAULT" oci config profile:
-
-```bash
-ruby invoke_function.rb workshop helloworld-app helloworld-func-go '{"name":"foobar"}'
-{"message":"Hello foobar"}
-```
-
-2) Using a non-DEFAULT profile name in oci config:
-
-a) Export `OCI_CONFIG_PROFILE` as an environment variable:
-
-```bash
-export OCI_CONFIG_PROFILE=faas_test
-invoke_function.rb workshop helloworld-app helloworld-func-go '{"name":"foobar"}'
-{"message":"Hello foobar"}
-```
-
-b) Set `OCI_CONFIG_PROFILE` on the command line:
-
-```bash
-OCI_CONFIG_PROFILE=faas_test invoke_function.rb workshop helloworld-app helloworld-func-go '{"name":"foobar"}'
-{"message":"Hello foobar"}
-```
-
-3) Invoking a Function inside a nested compartment:
-
-a) with payload:
-
-```bash
-ruby invoke_function.rb nested-ws nest-app go-fn {"name":"EMEA"}
-```
-
-b) without payload:
-
-```bash
-ruby invoke_function.rb nested-ws nest-app go-fn '{}'
-```
-
-## What if my function needs input in binary form?
-
-You can use this [TensorFlow based function](https://github.com/abhirockzz/fn-hello-tensorflow) 
-as an example to explore the possibility of invoking a function using binary content.
-This function expects the image data (in binary form) as an input and returns what object that image
-resembles along with the percentage accuracy.
-
-If you were to deploy the TensorFlow function, the command to invoke it using Fn
-CLI would be something like this:
-
-```bash
-cat test-som-1.jpeg | fn invoke fn-tensorflow-app classify
-```
-
-In this case, the `test-som-1.jpeg` image is being passed
-as an input to the function. 
-
-The programmatic (using.rbthon SDK) equivalent of
-this would look something like [invoke_function_file.rb](invoke_function_file.py)
-
-### Example of invoking a function with binary input
-
-```bash
-ruby invoke_function_file.rb <compartment-name> <app-name> <function-name> <image-file-path>
-```
-
-```bash
-ruby invoke_function_file.rb workshop demo-app classify test-som-1.jpeg
-This is a 'sombrero' Accuracy - 94%
-```
-
-
-:
-
- - FunctionsManagementClient - is used for functions lifecycle management operations including creating, updating, and querying applications and functions
- - FunctionsInvokeClient - is used specifically for invoking functions
-
-Along with the two clients, the OCI SDK also provides a number of wrapper/handle
-objects like `OCI::Identity::Models::Compartment`, `OC::Functions::Models::Application`, and `OCI::Functions::Models::Function`. In the example, we
-navigate down the hierarchy from `OCI::Identity::Models::Compartment` to `OCI::Functions::Models::Function` and then once we
-have the desired `OCI::Functions:Models.Function` we invoke it using the `OCI::Functions::FunctionsInvokeClient`.
-
-**Important Note: A Function's OCID and invoke endpoint will remain the same unless you delete the function or it's parent application. In a real world scenario, once you get the `OCI::Functions::Models::Function`, you should cache the function's OCID and invoke endpoint either in-memory or to an external data store and use the cached values for subsequent invocations.**
-
-For more information on code structure and API along with the data types please read code doc strings available for each method:
-
- - [`get_compartment`](invoke_function.rb#L14) method
- - [`get_app`](invoke_function.rb#L36) method
- - [`get_function`](invoke_function.rb#L62) method
-
