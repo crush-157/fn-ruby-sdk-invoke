@@ -1,12 +1,12 @@
-# Invoking an Oracle Function using the OCI Python SDK
+# Invoking an Oracle Function using the OCI Ruby SDK
 
 ## Introduction
 
-This example illustrates how to use the OCI Python SDK to invoke a function
+This example illustrates how to use the OCI Ruby SDK to invoke a function
 deployed to Oracle Functions.  The OCI SDK includes support for a large number
 of OCI services but this example focuses specifically on Functions support.
-For an introduction to the OCI SDK please refer to the [official
-documentation](https://oracle-cloud-infrastructure-python-sdk.readthedocs.io/en/latest/).
+For an introduction to the OCI Ruby SDK please refer to the [official
+documentation](https://docs.cloud.oracle.com/iaas/Content/API/SDKDocs/rubysdk.htm).
 
 In this example we'll show how you can invoke a function using its name, the
 name of application it belongs to, the OCI compartment that contains the
@@ -17,72 +17,80 @@ Functions related API clients exposed by the OCI SDK:
  - FunctionsInvokeClient - is used specifically for invoking functions
 
 Along with the two clients, the OCI SDK also provides a number of wrapper/handle
-objects like `oci.identity.models.Compartment`, `oci.functions.models.Application`, and `oci.functions.models.Function`. In the example, we
-navigate down the hierarchy from `oci.identity.models.Compartment` to `oci.functions.models.Function` and then once we
-have the desired `oci.functions.models.Function` we invoke is using the `oci.functions.FunctionsInvokeClient`.
+objects like `OCI::Identity::Models::Compartment`, `OC::Functions::Models::Application`, and `OCI::Functions::Models::Function`. In the example, we
+navigate down the hierarchy from `OCI::Identity::Models::Compartment` to `OCI::Functions::Models::Function` and then once we
+have the desired `OCI::Functions:Models.Function` we invoke it using the `OCI::Functions::FunctionsInvokeClient`.
 
-**Important Note: A Function's OCID and invoke endpoint will remain the same unless you delete the function or it's parent application. Once you get the `oci.functions.models.Function`, you should cache the function's OCID and invoke endpoint either in-memory or to an external data store and use the cached values for subsequent invocations.**
+**Important Note: A Function's OCID and invoke endpoint will remain the same unless you delete the function or it's parent application. In a real world scenario, once you get the `OCI::Functions::Models::Function`, you should cache the function's OCID and invoke endpoint either in-memory or to an external data store and use the cached values for subsequent invocations.**
 
 For more information on code structure and API along with the data types please read code doc strings available for each method:
 
- - [`get_compartment`](invoke_function.py#L14) method
- - [`get_app`](invoke_function.py#L36) method
- - [`get_function`](invoke_function.py#L62) method
+ - [`get_compartment`](invoke_function.rb#L14) method
+ - [`get_app`](invoke_function.rb#L36) method
+ - [`get_function`](invoke_function.rb#L62) method
 
 
-### Prerequisites
+## Prerequisites
 
-This example invokes a function so we have to install the Fn CLI and create a target function:
+### OCI Config
 
-1. Install/update the Fn CLI
+You will need a valid OCI `config` file to be able to authenticate against OCI.
 
-   `curl -LSs https://raw.githubusercontent.com/fnproject/cli/master/install |
-   sh`
+The OCI `config` file is usually found in the directory `~/.oci`.
 
-2. Create a function to invoke
+If your config file is in a different location, you will need to set the environment variable `OCI_CONFIG_PATH` to point to the directory path for the `config` file.
 
-   Create a function using [Golang Hello World Function](https://github.com/fnproject/fn/blob/master/README.md#your-first-function)
+The easiest way to set up your `config` correctly is to install the [OCI CLI](https://docs.cloud.oracle.com/iaas/Content/API/SDKDocs/cliinstall.htm) and then run
+```bash
+oci setup config
+```
 
-### Install preview OCI Python SDK
+### Target Function
 
-1. Download and unzip the preview SDK
+To be able to run this example you're going to need a target function hosted on the Oracle Cloud Functions service.
 
-   `unzip oci-python-sdk-2.2.1+preview.1.712.zip`
+This example has been written using a Java "hello world" function.  The [Functions Getting Started guide](https://www.oracle.com/webfolder/technetwork/tutorials/infographics/oci_faas_gettingstarted_quickview/functions_quickview_top/functions_quickview/index.html) describes how to:
+- set up Oracle Functions
+- configure your context
+- deploy and invoke your first function
 
-2. Change into the correct directory
+If you have your own function then feel free to use that, but you must have successfully:
+1. deployed it
+2. Invoked it.
 
-   `cd oci-python-sdk-2.2.1+preview.1.712`
+### Install preview OCI Ruby SDK
 
-3. Virtualenv
+At the time of writing, the Functions API of the SDK is _in preview_ so you will need the _preview version_ of the `oci` gem **(not the one available from rubygems)**.
 
+Speak to your friendly neighbourhood OCI PM to get hold of the preview version!
+
+1. Unzip the file containing the gem
+2. (optional) Create a "sandbox" before installing the preview gem.
+   
+   The steps to do this depend upon which version manager you use for Ruby.
+   
+   I'm using RVM, so I `create` a new `gemset`, and then `use` that to install and run the preview gem:
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install oci-2.2.1+preview.1.712-py2.py3-none-any.whl
+   rvm gemset create preview
+   rvm gemset use preview
+   rvm install path-to-gemfile/gemfile.gem
    ```
+   Make sure that you're in the correct sandbox when running the examples.
 
-4. Clone this repository in a separate directory 
+### Get Example Code
+0. Clone this repository in a separate directory 
 
-   `git clone https://github.com/denismakogon/fn-python-sdk-invoke.git`
+   `git clone https://github.com/denismakogon/fn.rbthon-sdk-invoke.git`
 
-5. Change to the correct directory where you cloned the example: 
+0. Change to the correct directory where you cloned the example: 
 
-   `cd fn-python-sdk-invoke` 
-
-
-
-### Authentication
-
-This example assumes the OCI config file is available on the machine where this client code will run. You can override the config defaults using the following environment variables:
-
- - `OCI_CONFIG_PATH` for the OCI config file (default value: `~/.oci/config`)
- - `OCI_CONFIG_PROFILE` stands from the OCI config profile (default value: `DEFAULT`)
+   `cd fn.rbthon-sdk-invoke` 
 
 
 ## You can now invoke your function!
 
 ```bash
-python invoke_function.py <compartment-name> <app-name> <function-name> <request payload>
+ruby invoke_function.rb <compartment-name> <app-name> <function-name> [<request payload>]
 ```
 
 ### Enable debug mode
@@ -91,12 +99,12 @@ Set environment variable:
 
 ```bash
 export DEBUG=1
-python invoke_function.py <compartment-name> <app-name> <function-name> <request payload>
+ruby invoke_function.rb <compartment-name> <app-name> <function-name> <request payload>
 ```
 or
 
 ```bash
-DEBUG=1 python invoke_function.py <compartment-name> <app-name> <function-name> <request payload>
+DEBUG=1.rbthon invoke_function.rb <compartment-name> <app-name> <function-name> <request payload>
 ```
 
 ### Example of invoking a function
@@ -104,22 +112,25 @@ DEBUG=1 python invoke_function.py <compartment-name> <app-name> <function-name> 
 1) Using "DEFAULT" oci config profile:
 
 ```bash
-python invoke_function.py workshop helloworld-app helloworld-func-go '{"name":"foobar"}'
+ruby invoke_function.rb workshop helloworld-app helloworld-func-go '{"name":"foobar"}'
 {"message":"Hello foobar"}
 ```
 
 2) Using a non-DEFAULT profile name in oci config:
 
-a) with payload:
+a) Export `OCI_CONFIG_PROFILE` as an environment variable:
 
 ```bash
-OCI_CONFIG_PROFILE=workshop-devrel-profile python invoke_function.py workshop helloworld-app helloworld-func-go '{"name":"foobar"}'
+export OCI_CONFIG_PROFILE=faas_test
+invoke_function.rb workshop helloworld-app helloworld-func-go '{"name":"foobar"}'
+{"message":"Hello foobar"}
 ```
 
-b) without payload:
+b) Set `OCI_CONFIG_PROFILE` on the command line:
 
 ```bash
-OCI_CONFIG_PROFILE=workshop-devrel-profile python invoke_function.py workshop helloworld-app helloworld-func-go '{}'
+OCI_CONFIG_PROFILE=faas_test invoke_function.rb workshop helloworld-app helloworld-func-go '{"name":"foobar"}'
+{"message":"Hello foobar"}
 ```
 
 3) Invoking a Function inside a nested compartment:
@@ -127,13 +138,13 @@ OCI_CONFIG_PROFILE=workshop-devrel-profile python invoke_function.py workshop he
 a) with payload:
 
 ```bash
-python invoke_function.py nested-ws nest-app go-fn {"name":"EMEA"}
+ruby invoke_function.rb nested-ws nest-app go-fn {"name":"EMEA"}
 ```
 
 b) without payload:
 
 ```bash
-python invoke_function.py nested-ws nest-app go-fn '{}'
+ruby invoke_function.rb nested-ws nest-app go-fn '{}'
 ```
 
 ## What if my function needs input in binary form?
@@ -153,16 +164,16 @@ cat test-som-1.jpeg | fn invoke fn-tensorflow-app classify
 In this case, the `test-som-1.jpeg` image is being passed
 as an input to the function. 
 
-The programmatic (using python SDK) equivalent of
-this would look something like [invoke_function_tf.py](invoke_function_tf.py)
+The programmatic (using.rbthon SDK) equivalent of
+this would look something like [invoke_function_file.rb](invoke_function_file.py)
 
 ### Example of invoking a function with binary input
 
 ```bash
-python invoke_function_tf.py <compartment-name> <app-name> <function-name> <image-file-path>
+ruby invoke_function_file.rb <compartment-name> <app-name> <function-name> <image-file-path>
 ```
 
 ```bash
-python invoke_function_tf.py workshop demo-app classify test-som-1.jpeg
+ruby invoke_function_file.rb workshop demo-app classify test-som-1.jpeg
 This is a 'sombrero' Accuracy - 94%
 ```
