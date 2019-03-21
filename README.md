@@ -9,26 +9,10 @@ For an introduction to the OCI Ruby SDK please refer to the [official
 documentation](https://docs.cloud.oracle.com/iaas/Content/API/SDKDocs/rubysdk.htm).
 
 In this example we'll show how you can invoke a function using its name, the
-name of application it belongs to, the OCI compartment that contains the
-application, and the OCID of your tenancy.  To do this we'll use the two
-Functions related API clients exposed by the OCI SDK:
+name of application it belongs to, and the name of OCI compartment that contains the
+application.
 
- - FunctionsManagementClient - is used for functions lifecycle management operations including creating, updating, and querying applications and functions
- - FunctionsInvokeClient - is used specifically for invoking functions
-
-Along with the two clients, the OCI SDK also provides a number of wrapper/handle
-objects like `OCI::Identity::Models::Compartment`, `OC::Functions::Models::Application`, and `OCI::Functions::Models::Function`. In the example, we
-navigate down the hierarchy from `OCI::Identity::Models::Compartment` to `OCI::Functions::Models::Function` and then once we
-have the desired `OCI::Functions:Models.Function` we invoke it using the `OCI::Functions::FunctionsInvokeClient`.
-
-**Important Note: A Function's OCID and invoke endpoint will remain the same unless you delete the function or it's parent application. In a real world scenario, once you get the `OCI::Functions::Models::Function`, you should cache the function's OCID and invoke endpoint either in-memory or to an external data store and use the cached values for subsequent invocations.**
-
-For more information on code structure and API along with the data types please read code doc strings available for each method:
-
- - [`get_compartment`](invoke_function.rb#L14) method
- - [`get_app`](invoke_function.rb#L36) method
- - [`get_function`](invoke_function.rb#L62) method
-
+To do this we'll use the Functions related API clients exposed by the OCI SDK.
 
 ## Prerequisites
 
@@ -78,16 +62,88 @@ Speak to your friendly neighbourhood OCI PM to get hold of the preview version!
    Make sure that you're in the correct sandbox when running the examples.
 
 ### Get Example Code
-0. Clone this repository in a separate directory 
+1. Clone this repository in a separate directory 
 
-   `git clone https://github.com/denismakogon/fn.rbthon-sdk-invoke.git`
+   `git clone https://github.com/crush-157/fn-ruby-sdk-invoke.git`
 
 0. Change to the correct directory where you cloned the example: 
 
-   `cd fn.rbthon-sdk-invoke` 
+   `cd fn-ruby-sdk-invoke` 
 
+## Example
 
-## You can now invoke your function!
+### Code Structure
+
+The code is contained in three files:
+- [`invoke_function.rb`](invoke_function.rb) - invokes a function with either a String as payload, or no payload.
+- [`invoke_function_file.rb`](invoke_function_file.rb) - invokes a function with a file as payload.
+- [`api_helper.rb`](api_helper.rb) - contains the code that calls the API
+
+The code in `invoke_function.rb` and `invoke_function_file.rb` follows the same pattern:
+1.  Check the correct number of arguments have been passed
+2.  Call [`invoke_function`](api_helper.rb#L103) in `api_helper.rb`, passing in
+- `compartment_name`
+- `app_name`
+- `function_name`
+- `payload (if any)`
+
+Most of the work takes place inside `api_helper` as follows:
+
+1. [`compartment_ocid`](api_helper.rb#L39) - uses the `OCI::Identity::IdentityClient` of the SDK to look up the OCID of the named compartment.
+2. [`app_ocid`](api_helper.rb#64) - uses the `OCI::Functions::FunctionsManagementClient` of the SDK to look up the OCID of the named application.
+3. [`function`](api_helper.rb#86) - uses the `OCI::Functions::FunctionsManagementClient` of the SDK to get the named function.
+4. Having navigated from the `Compartment` to the `Application` to the `Function` in turn, we then call [`fn_invocation_client`](api_helper.rb#93) to create an instance of `OCI::Functions::FunctionsInvokeClient`.
+5. Finally the `OCI::Functions::FunctionsInvokeClient` is then used by [`invoke_function`](api_helper.rb#103) to invoke the function and return the result.
+
+### Running the Examples
+
+#### `invoke_function.rb`
+
+In the directory containing the example code run the `invoke_function.rb` with no arguments:
+```
+[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function.rb
+usage: ruby invoke_function.rb <compartment-name> <app-name> <function-name> [<request-payload>]
+```
+
+Then with `compartment-name`, `app-name` and `function-name` but no payload:
+```bash
+[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function.rb FaaS_Test helloworld-app helloworld-func
+Hello, world!
+```
+
+Then with a payload:
+```bash
+[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function.rb FaaS_Test helloworld-app helloworld-func Ruby
+Hello, Ruby!
+```
+
+If you mis-type the `compartment-name`, `app-name` or `function-name` you will see an error:
+```bash
+[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function.rb FaaS_Test helloworld-app exterminate doctor
+An error occurred: Could not find function exterminate
+```
+
+If you want more information on the error, either `export DEBUG=1` or set `DEBUG=1` at the start of the command:
+
+```bash
+[ewan@dalek fn-ruby-sdk-invoke]$ DEBUG=1 ruby invoke_function.rb FaaS_Test helloworld-app exterminate doctor
+/home/ewan/fn/oci-sdk/fn-ruby-sdk-invoke/api_helper.rb:89:in `block in function'
+/home/ewan/fn/oci-sdk/fn-ruby-sdk-invoke/api_helper.rb:89:in `fetch'
+/home/ewan/fn/oci-sdk/fn-ruby-sdk-invoke/api_helper.rb:89:in `function'
+/home/ewan/fn/oci-sdk/fn-ruby-sdk-invoke/api_helper.rb:104:in `invoke_function'
+invoke_function.rb:7:in `<main>'
+An error occurred: Could not find function exterminate
+```
+#### `invoke_function_file.rb`
+
+Now that you've seen you can invoke a function with an optional String payload, let's have a look at invoking a function that expects a file as payload.
+
+We're going to use a [TensorFlow based function](https://github.com/abhirockzz/fn-hello-tensorflow) 
+as an example to explore the possibility of invoking a function using binary content.
+This function expects the image data (in binary form) as an input and returns what object that image
+resembles along with the percentage accuracy.
+ 
+# Lord Vader says delete the rest:
 
 ```bash
 ruby invoke_function.rb <compartment-name> <app-name> <function-name> [<request payload>]
@@ -177,3 +233,23 @@ ruby invoke_function_file.rb <compartment-name> <app-name> <function-name> <imag
 ruby invoke_function_file.rb workshop demo-app classify test-som-1.jpeg
 This is a 'sombrero' Accuracy - 94%
 ```
+
+
+:
+
+ - FunctionsManagementClient - is used for functions lifecycle management operations including creating, updating, and querying applications and functions
+ - FunctionsInvokeClient - is used specifically for invoking functions
+
+Along with the two clients, the OCI SDK also provides a number of wrapper/handle
+objects like `OCI::Identity::Models::Compartment`, `OC::Functions::Models::Application`, and `OCI::Functions::Models::Function`. In the example, we
+navigate down the hierarchy from `OCI::Identity::Models::Compartment` to `OCI::Functions::Models::Function` and then once we
+have the desired `OCI::Functions:Models.Function` we invoke it using the `OCI::Functions::FunctionsInvokeClient`.
+
+**Important Note: A Function's OCID and invoke endpoint will remain the same unless you delete the function or it's parent application. In a real world scenario, once you get the `OCI::Functions::Models::Function`, you should cache the function's OCID and invoke endpoint either in-memory or to an external data store and use the cached values for subsequent invocations.**
+
+For more information on code structure and API along with the data types please read code doc strings available for each method:
+
+ - [`get_compartment`](invoke_function.rb#L14) method
+ - [`get_app`](invoke_function.rb#L36) method
+ - [`get_function`](invoke_function.rb#L62) method
+
