@@ -29,6 +29,8 @@ The easiest way to set up your `config` correctly is to install the [OCI CLI](ht
 oci setup config
 ```
 
+The default profile in the `config` file is `DEFAULT`.  If you have a different profile you want to use in the file, you will need to set the environment variable `OCI_CONFIG_PROFILE`.
+
 ### Target Function
 
 To be able to run this example you're going to need a target function hosted on the Oracle Cloud Functions service.
