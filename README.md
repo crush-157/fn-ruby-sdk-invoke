@@ -33,14 +33,21 @@ oci setup config
 
 To be able to run this example you're going to need a target function hosted on the Oracle Cloud Functions service.
 
-This example has been written using a Java "hello world" function.  The [Functions Getting Started guide](https://www.oracle.com/webfolder/technetwork/tutorials/infographics/oci_faas_gettingstarted_quickview/functions_quickview_top/functions_quickview/index.html) describes how to:
-- set up Oracle Functions
-- configure your context
-- deploy and invoke your first function
+This example has been written using a Java "hello world" function, as described [here](https://github.com/abhirockzz/oracle-functions-hello-worlds). 
 
-If you have your own function then feel free to use that, but you must have successfully:
-1. deployed it
-2. Invoked it.
+If you have your own function, or you prefer to use an example written in [another language](https://github.com/abhirockzz/oracle-functions-hello-worlds), then feel free to use that, but you must have successfully:
+1. Set up Oracle Functions
+2. Created your context
+3. Created your function
+4. Deployed your function
+5. Invoked it (successfully) using the Fn CLI
+
+For example, I have deployed a function `helloworld-func` to the application `helloworld-app`, and can successfully invoke it with the Fn CLI:
+
+```bash
+fn invoke helloworld-app helloworld-func
+Hello, world!
+```
 
 ### Install preview OCI Ruby SDK
 
@@ -96,6 +103,10 @@ Most of the work takes place inside `api_helper` as follows:
 3. [`function`](api_helper.rb#L86) - uses the `OCI::Functions::FunctionsManagementClient` of the SDK to get the named function.
 4. Having navigated from the `Compartment` to the `Application` to the `Function` in turn, we then call [`fn_invocation_client`](api_helper.rb#L93) to create an instance of `OCI::Functions::FunctionsInvokeClient`.
 5. Finally the `OCI::Functions::FunctionsInvokeClient` is then used by [`invoke_function`](api_helper.rb#L103) to invoke the function and return the result.
+
+_Note that both the `function OCID` and function endpoint will not change unless you delete the function, or the application that contains it._
+
+_So in a real world application, once we know the `function OCID`, we can store this and use it in the future to retrieve the function and it's invoke endpoint without having to reprise the sequence of calls described above._
 
 ### Running the Examples
 
