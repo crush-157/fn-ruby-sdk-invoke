@@ -64,7 +64,7 @@ Speak to your friendly neighbourhood OCI PM to get hold of the preview version!
    ```bash
    rvm gemset create preview
    rvm gemset use preview
-   rvm install path-to-gemfile/gemfile.gem
+   gem install path-to-gemfile/gemfile.gem
    ```
    Make sure that you're in the correct sandbox when running the examples.
 
