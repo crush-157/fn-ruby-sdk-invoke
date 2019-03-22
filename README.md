@@ -50,9 +50,9 @@ Speak to your friendly neighbourhood OCI PM to get hold of the preview version!
 
 1. Unzip the file containing the gem
 2. (optional) Create a "sandbox" before installing the preview gem.
-   
+
    The steps to do this depend upon which version manager you use for Ruby.
-   
+
    I'm using RVM, so I `create` a new `gemset`, and then `use` that to install and run the preview gem:
    ```bash
    rvm gemset create preview
@@ -62,13 +62,13 @@ Speak to your friendly neighbourhood OCI PM to get hold of the preview version!
    Make sure that you're in the correct sandbox when running the examples.
 
 ### Get Example Code
-1. Clone this repository in a separate directory 
+1. Clone this repository in a separate directory
 
    `git clone https://github.com/crush-157/fn-ruby-sdk-invoke.git`
 
-0. Change to the correct directory where you cloned the example: 
+2. Change to the correct directory where you cloned the example:
 
-   `cd fn-ruby-sdk-invoke` 
+   `cd fn-ruby-sdk-invoke`
 
 ## Example
 
@@ -103,32 +103,32 @@ Most of the work takes place inside `api_helper` as follows:
 
 In the directory containing the example code run the `invoke_function.rb` with no arguments:
 ```
-[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function.rb
+ruby invoke_function.rb
 usage: ruby invoke_function.rb <compartment-name> <app-name> <function-name> [<request-payload>]
 ```
 
 Then with `compartment-name`, `app-name` and `function-name` but no payload:
 ```bash
-[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function.rb FaaS_Test helloworld-app helloworld-func
+ruby invoke_function.rb FaaS_Test helloworld-app helloworld-func
 Hello, world!
 ```
 
 Then with a payload:
 ```bash
-[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function.rb FaaS_Test helloworld-app helloworld-func Ruby
+ruby invoke_function.rb FaaS_Test helloworld-app helloworld-func Ruby
 Hello, Ruby!
 ```
 
 If you mis-type the `compartment-name`, `app-name` or `function-name` you will see an error:
 ```bash
-[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function.rb FaaS_Test helloworld-app exterminate doctor
+ruby invoke_function.rb FaaS_Test helloworld-app exterminate doctor
 An error occurred: Could not find function exterminate
 ```
 
 If you want more information on the error, either `export DEBUG=1` or set `DEBUG=1` at the start of the command:
 
 ```bash
-[ewan@dalek fn-ruby-sdk-invoke]$ DEBUG=1 ruby invoke_function.rb FaaS_Test helloworld-app exterminate doctor
+DEBUG=1 ruby invoke_function.rb FaaS_Test helloworld-app exterminate doctor
 /home/ewan/fn/oci-sdk/fn-ruby-sdk-invoke/api_helper.rb:89:in `block in function'
 /home/ewan/fn/oci-sdk/fn-ruby-sdk-invoke/api_helper.rb:89:in `fetch'
 /home/ewan/fn/oci-sdk/fn-ruby-sdk-invoke/api_helper.rb:89:in `function'
@@ -140,7 +140,7 @@ An error occurred: Could not find function exterminate
 
 Now that you've seen you can invoke a function with an optional String payload, let's have a look at invoking a function that expects a file as payload.
 
-We're going to use a [TensorFlow based function](https://github.com/abhirockzz/fn-hello-tensorflow) 
+We're going to use a [TensorFlow based function](https://github.com/abhirockzz/fn-hello-tensorflow)
 as an example to explore the possibility of invoking a function using binary content.
 This function expects the image data (in binary form) as an input and returns what object that image
 resembles along with the percentage accuracy.
@@ -149,16 +149,16 @@ Once you've deployed the `classify` function, the command to invoke it using Fn
 CLI would be something like this (I've just deployed it to the same helloworld-app as the helloworld-func):
 
 ```bash
-[ewan@dalek fn-ruby-sdk-invoke]$ cat pepperoni-pizza-800x800.png | fn invoke helloworld-app classify
+cat pepperoni-pizza-800x800.png | fn invoke helloworld-app classify
 This is a 'pizza' Accuracy - 95%
 ```
 
-In this case, the `pepperoni-pizza-800x800.png` image is being passed as an input to the function. 
+In this case, the `pepperoni-pizza-800x800.png` image is being passed as an input to the function.
 
 To do this via the SDK, we can run `invoke_function_file.rb`, the key difference being that the 4th argument is now a path to the payload file:
 
 ```bash
-[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function_file.rb
+ruby invoke_function_file.rb
 usage: ruby invoke_function.rb <compartment-name> <app-name> <function-name> <request-payload-path>
 ```
 
@@ -166,6 +166,6 @@ The file contents are read and sent to the function as the [`payload`](invoke_fu
 
 To send an image as the payload:
 ```bash
-[ewan@dalek fn-ruby-sdk-invoke]$ ruby invoke_function_file.rb FaaS_Test helloworld-app classify pepperoni-pizza-800x800.png
+ruby invoke_function_file.rb FaaS_Test helloworld-app classify pepperoni-pizza-800x800.png
 This is a 'pizza' Accuracy - 95%
 ```
