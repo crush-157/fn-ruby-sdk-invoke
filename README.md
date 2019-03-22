@@ -31,6 +31,8 @@ oci setup config
 
 The default profile in the `config` file is `DEFAULT`.  If you have a different profile you want to use, you will need to set the environment variable `OCI_CONFIG_PROFILE` to the profile name.
 
+_Note: the Ruby SDK requires that you always have a `DEFAULT` profile present in your `config`, even if you use a custom profile._
+
 ### Target Function
 
 To be able to run this example you're going to need a target function hosted on the Oracle Cloud Functions service.
