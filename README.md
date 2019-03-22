@@ -29,7 +29,7 @@ The easiest way to set up your `config` correctly is to install the [OCI CLI](ht
 oci setup config
 ```
 
-The default profile in the `config` file is `DEFAULT`.  If you have a different profile you want to use in the file, you will need to set the environment variable `OCI_CONFIG_PROFILE`.
+The default profile in the `config` file is `DEFAULT`.  If you have a different profile you want to use, you will need to set the environment variable `OCI_CONFIG_PROFILE` to the profile name.
 
 ### Target Function
 
