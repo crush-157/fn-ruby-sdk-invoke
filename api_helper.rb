@@ -106,6 +106,6 @@ def invoke_function(compartment_name:, app_name:, function_name:, payload: nil)
     app_name: app_name,
     compartment_name: compartment_name
   )
-  fn_invocation_client(target_function: fn).invoke_function(fn.id,
-    {:invoke_function_body => payload})
+  opts = {:invoke_function_body => payload}
+  fn_invocation_client(target_function: fn).invoke_function(fn.id, opts)
 end
