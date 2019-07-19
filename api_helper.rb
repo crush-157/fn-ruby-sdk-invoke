@@ -100,11 +100,12 @@ end
 # Invokes the named function, in the named application in the named compartment
 # with the payload (if any).
 # Returns an instance of OCI::Response
-def invoke_function(compartment_name:, app_name:, function_name:, payload: '')
+def invoke_function(compartment_name:, app_name:, function_name:, payload: nil)
   fn = function(
     function_name: function_name,
     app_name: app_name,
     compartment_name: compartment_name
   )
-  fn_invocation_client(target_function: fn).invoke_function(fn.id, payload)
+  fn_invocation_client(target_function: fn).invoke_function(fn.id,
+    {:invoke_function_body => payload})
 end
