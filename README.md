@@ -53,24 +53,17 @@ fn invoke helloworld-app helloworld-func
 Hello, world!
 ```
 
-### Install preview OCI Ruby SDK
+### Install OCI Ruby SDK
 
-At the time of writing, the Functions API of the SDK is _in preview_ so you will need the _preview version_ of the `oci` gem **(not the one available from rubygems)**.
+To use the OCI SDK for Ruby, you must install the `oci` gem.
 
-Speak to your friendly neighbourhood OCI PM to get hold of the preview version!
+   `gem install oci`
 
-1. Unzip the file containing the gem
-2. (optional) Create a "sandbox" before installing the preview gem.
+The Functions API of the SDK is included in the `oci` gem from version 2.5.11.
 
-   The steps to do this depend upon which version manager you use for Ruby.
+If you have an earlier version of the `oci` gem installed, please update it.
 
-   I'm using RVM, so I `create` a new `gemset`, and then `use` that to install and run the preview gem:
-   ```bash
-   rvm gemset create preview
-   rvm gemset use preview
-   gem install path-to-gemfile/gemfile.gem
-   ```
-   Make sure that you're in the correct sandbox when running the examples.
+   `gem update oci`
 
 ### Get Example Code
 1. Clone this repository in a separate directory
